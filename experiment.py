@@ -3,21 +3,22 @@ import utils
 import oracles
 from uniform import Uniform
 import pickle
+from arm import Arm
+import os
 
 class Experiment(object):
 
     def __init__(self, arm_seed, n, k, sigma, dist_mean, save_directory):
-    """Initialize an experiment object.
-    Args:
-        arm_seed: the seed to build the arms
-        n: int number of arms
-        k: int number of arms to return
-        sigma: float sigma of arms
-        dist_mean: float mean to pull arms around
-        save_directory: directory to save experiments into
-    """
-        self.seed = seed
-        np.random.seed(self.seed)
+    # """Initialize an experiment object.
+    # Args:
+    #     arm_seed: the seed to build the arms
+    #     n: int number of arms
+    #     k: int number of arms to return
+    #     sigma: float sigma of arms
+    #     dist_mean: float mean to pull arms around
+    #     save_directory: directory to save experiments into"""
+        self.arm_seed = arm_seed
+        np.random.seed(self.arm_seed)
         # Set up arms
         self.sigma = sigma
         self.arms = [Arm(np.random.normal(dist_mean),
@@ -35,74 +36,75 @@ class Experiment(object):
             os.makedirs(self.save_directory)
 
     def run_experiment(self, delta, epsilon, oracle_type='topK', 
-                       algorithm='caco', T=None, K=[10,5], 
-                       S=[1,15], J=[1,6], seeds=None, name=None):
-    """Run a single experiment.
-    Args:
-        delta: float
-        epsilon: float
-        oracle_type: 'topK' or 'submod'
-        algorithm: 'caco', 'brutas', 'uniform', or 'random'
-        T: (int list) budgets for each round
-        J: (int list) cost for each round
-        S: (int list) information gain for each round
-        K: (int list) The number of arms to move onto the next round. The last number should be k.
-        seed: int
-    """
-    if seed is not None:
-        np.random.seed(seed)
-    # Reset arms
-    for arm in self.arms:
-        arm.reset()
+                       algorithm='uniform', T=None, K=[10,5], 
+                       S=[1,15], J=[1,6], seed=None, name=None):
+    # """Run a single experiment.
+    # Args:
+    #     delta: float
+    #     epsilon: float
+    #     oracle_type: 'topK' or 'submod'
+    #     algorithm: 'caco', 'brutas', 'uniform', or 'random'
+    #     T: (int list) budgets for each round
+    #     J: (int list) cost for each round
+    #     S: (int list) information gain for each round
+    #     K: (int list) The number of arms to move onto the next round. The last number should be k.
+    #     seed: int
+    # """
+        if seed is not None:
+            np.random.seed(seed)
+        # Reset arms
+        for arm in self.arms:
+            arm.reset()
 
-    # Set up the oracle
-    if oracle_type == 'submod':
-        oracle = oracles.submodular_max_oracle
-        oracle_utility = oracles.submodular_max_utility
-        this_oracle_args = self.oracle_args
-    elif oracle_type == 'topK':
-        oracle = oracles.top_k_oracle
-        oracle_utility = oracles.top_k_utility
-        this_oracle_args = []
-    else:
-        raise ValueError('Unknown oracle type ' + oracle_type)
-
-    # Set up the algorithm
-    if algorithm == 'caco':
-        mab_alg = None;
-    elif algorithm == 'brutas':
+        # Set up the oracle
         if oracle_type == 'submod':
-            oracle = oracles.c_top_k_oracle
+            oracle = oracles.submodular_max_oracle
+            oracle_utility = oracles.submodular_max_utility
+            this_oracle_args = self.oracle_args
+        elif oracle_type == 'topK':
+            oracle = oracles.top_k_oracle
+            oracle_utility = oracles.top_k_utility
+            this_oracle_args = []
         else:
-            oracle = oracles.c_submod_oracle
-        mab_alg = None
-    elif algorithm == 'uniform':
-        mab_alg = Uniform(self.arms, T, K, S, J, delta, 
-                          sigma, epsilon, oracle, utility, 
-                          this_oracle_args)
-    elif algorithm == 'random':
-        mab_alg = None
-    else:
-        raise ValueError('Unknown algorithm ' + algorithm)
+            raise ValueError('Unknown oracle type ' + oracle_type)
 
-    # Run the algorithm
-    A = mab_alg.run_alg();
+        # Set up the algorithm
+        if algorithm == 'caco':
+            mab_alg = None;
+        elif algorithm == 'brutas':
+            if oracle_type == 'submod':
+                oracle = oracles.c_top_k_oracle
+            else:
+                oracle = oracles.c_submod_oracle
+            mab_alg = None
+        elif algorithm == 'uniform':
+            mab_alg = Uniform(self.arms, T, K, S, J, delta, 
+                              self.sigma, epsilon, oracle, oracle_utility, 
+                              this_oracle_args)
+        elif algorithm == 'random':
+            mab_alg = None
+        else:
+            raise ValueError('Unknown algorithm ' + algorithm)
 
-    # Save all of the things!
-    results_dict = {'A': A,
-                    'mab_alg': mab_alg, #Contains all of the information
-                    'arms': arms}
-    directory = os.path.join(self.save_directory, oracle_type, algorithm)
-    if not os.path.exists(directory):
-        os.makedirs(directory)
-    if name is None:
-        name = "delta_{}_sigma_{}_epsilon_{}.pkl".format(delta, sigma, epsilon);
-    file_path = os.path.join(directory, name)
-    with open(file_path, 'wb+') as f:
-        pickle.dump(data, f)
+        # Run the algorithm
+        A = mab_alg.run_alg();
 
+        # Save all of the things!
+        results_dict = {'A': A,
+                        'mab_alg': mab_alg, #Contains all of the information
+                        'arms': self.arms}
+        directory = os.path.join(self.save_directory, oracle_type, algorithm)
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+        if name is None:
+            name = "delta_{}_sigma_{}_epsilon_{}.pkl".format(delta, self.sigma, epsilon);
+        file_path = os.path.join(directory, name)
+        with open(file_path, 'wb+') as f:
+            pickle.dump(results_dict, f)
 
-    
+# ex = Experiment(1, 50, 10, 0.2, 10, "data/")
+# ex.run_experiment(0.3, 0.3, T=[200,60])
+
 
 
 #     def grid_test(delta, epsilon, oracle_type="topK", algorithm="uniform", budgets=[1], 

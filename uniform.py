@@ -19,11 +19,11 @@ class Uniform(object):
         self.util = np.zeros(len(arms))
         self.cost = [0]
 
-    def run_alg():
+    def run_alg(self):
         for i in range(len(self.K)):
             # Pull each arm T[i]/jn number of times.
             for j in self.A:
-                for x in range(self.T[i]/(self.A.size*self.J[i])):
+                for x in range(int(self.T[i]/(self.A.size*self.J[i]))):
                     self.arms[j].pull_arm(self.S[i], self.J[i])
                     self.cost[-1] += self.J[i]
                 self.util[j] = self.arms[j].get_util()
