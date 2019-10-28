@@ -1,3 +1,4 @@
+import numpy as np
 
 class Uniform(object):
     
@@ -28,7 +29,7 @@ class Uniform(object):
                 self.util[j] = self.arms[j].get_util()
             # Get the reduced set for this round
             self.A = self.oracle(self.util, self.K[i], self.A, *self.oracle_args)
-            cost.append(cost[-1])
+            self.cost.append(self.cost[-1])
 
         return self.A
 
