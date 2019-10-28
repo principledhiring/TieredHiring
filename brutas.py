@@ -70,7 +70,6 @@ class BRUTaS(object):
                     M_i_tilde[arm] = self.oracle(self.util, self.k,
                                                         self.active_arms[self.active_arms != arm],
                                                         A_i_arm, *self.oracle_args)
-                    # print("{} arm".format(cnt))
                     cnt += 1
                 candidate = self.active_arms[0]
                 util_M_i = self.utility(self.util, M_i, *self.oracle_args)
@@ -105,7 +104,7 @@ class BRUTaS(object):
                     #     data.decisions.append(0)
                 # removing choosen arm from Active_arms and setting its util to 0
                 self.active_arms = self.active_arms[self.active_arms != candidate]
-
+            self.cost.append(self.cost[-1])
             # if save_data:
             #     data.cost_i.append(cost)
             #     data.T_tilde_i.append(T_tilde_i)

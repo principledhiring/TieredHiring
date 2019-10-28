@@ -3,6 +3,7 @@ import utils
 import oracles
 from uniform import Uniform
 from brutas import BRUTaS
+from caco import CACO
 import pickle
 from arm import Arm
 import os
@@ -71,7 +72,9 @@ class Experiment(object):
 
         # Set up the algorithm
         if algorithm == 'caco':
-            mab_alg = None;
+            mab_alg = CACO(self.arms, K, S, J, delta, 
+                           self.sigma, epsilon, oracle, oracle_utility, 
+                           this_oracle_args)
         elif algorithm == 'brutas':
             if oracle_type == 'submod':
                 oracle = oracles.c_submod_oracle
@@ -106,7 +109,12 @@ class Experiment(object):
             pickle.dump(results_dict, f)
 
 ex = Experiment(1, 50, 10, 0.2, 10, "data/")
+ex.run_experiment(0.3, 0.3, T=[200,60], algorithm="uniform")
 ex.run_experiment(0.3, 0.3, T=[200,60], algorithm="brutas")
+ex.run_experiment(0.3, 0.3, algorithm="caco")
+ex.run_experiment(0.3, 0.3, T=[200,60], algorithm="uniform", oracle_type="submod")
+ex.run_experiment(0.3, 0.3, T=[200,60], algorithm="brutas", oracle_type="submod")
+ex.run_experiment(0.3, 0.3, algorithm="caco", oracle_type="submod")
 
 
 
