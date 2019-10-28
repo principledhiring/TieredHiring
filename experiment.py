@@ -2,6 +2,7 @@ import numpy as np
 import utils
 import oracles
 from uniform import Uniform
+from brutas import BRUTaS
 import pickle
 from arm import Arm
 import os
@@ -73,10 +74,12 @@ class Experiment(object):
             mab_alg = None;
         elif algorithm == 'brutas':
             if oracle_type == 'submod':
-                oracle = oracles.c_top_k_oracle
-            else:
                 oracle = oracles.c_submod_oracle
-            mab_alg = None
+            else:
+                oracle = oracles.c_top_k_oracle
+            mab_alg = BRUTaS(self.arms, T, K, S, J, delta, 
+                              self.sigma, epsilon, oracle, oracle_utility, 
+                              this_oracle_args)
         elif algorithm == 'uniform':
             mab_alg = Uniform(self.arms, T, K, S, J, delta, 
                               self.sigma, epsilon, oracle, oracle_utility, 
@@ -102,8 +105,8 @@ class Experiment(object):
         with open(file_path, 'wb+') as f:
             pickle.dump(results_dict, f)
 
-# ex = Experiment(1, 50, 10, 0.2, 10, "data/")
-# ex.run_experiment(0.3, 0.3, T=[200,60])
+ex = Experiment(1, 50, 10, 0.2, 10, "data/")
+ex.run_experiment(0.3, 0.3, T=[200,60], algorithm="brutas")
 
 
 

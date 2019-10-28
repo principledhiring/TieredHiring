@@ -136,3 +136,12 @@ def get_costs_gains(m, j_rate=1, s_rate=2, type='linear', s_of_j=False,
     else:
         raise ValueError('Invalid type')
     return enforce_increase(J, S)
+
+def get_budget_Ks(arms,K):
+    # if it's a budgetted algorithm
+    # change K[i] to number of decisions needed to get K[i]
+    K = [len(arms) - k for k in K]
+    for i in range(1, len(K)-1):
+        K[i] -= K[:i]
+    K[-1] = len(arms) - sum(K[:-1])
+    return K
