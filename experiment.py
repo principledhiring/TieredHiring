@@ -9,36 +9,32 @@ from arm import Arm
 import os
 
 class Experiment(object):
-
-    def __init__(self, arm_seed, n, k, sigma, dist_mean, save_directory):
-    # """Initialize an experiment object.
+    def __init__(self, arms, sigma, save_directory,
+                 q=2):
+    # """Initialize a Experiment super object.
     # Args:
-    #     arm_seed: the seed to build the arms
-    #     n: int number of arms
-    #     k: int number of arms to return
+    #     arms: array of arms
     #     sigma: float sigma of arms
-    #     dist_mean: float mean to pull arms around
+    #     q: int number of groups for submodular utility
     #     save_directory: directory to save experiments into"""
-        self.arm_seed = arm_seed
-        np.random.seed(self.arm_seed)
+        # Set up groups
         # Set up arms
         self.sigma = sigma
-        self.arms = [Arm(np.random.normal(dist_mean),
-            utils.pull_strat,
-            {"sigma": sigma, "dist_mean": dist_mean}) for i in range(n)]
-        self.n = n
-        self.k = k
+        self.arms = arms
+        self.n = len(arms)
         # Set up groups
-        self.groups = np.array([0,1])
-        self.arms_groups = np.random.randint(len(self.groups), size=n)
+        self.q = q
+        self.groups = np.arange(self.q)
+        self.arms_groups = np.random.randint(len(self.groups), size=self.n)
         self.oracle_args = [self.groups, self.arms_groups]
         # Save directory
         self.save_directory = save_directory
         if not os.path.exists(self.save_directory):
             os.makedirs(self.save_directory)
+        return
 
-    def run_experiment(self, delta, epsilon, oracle_type='topK', 
-                       algorithm='uniform', T=None, K=[10,5], 
+    def run_experiment(self, delta, epsilon, oracle_type='topK',
+                       algorithm='uniform', T=None, K=[10,5],
                        S=[1,15], J=[1,6], seed=None, name=None):
     # """Run a single experiment.
     # Args:
@@ -49,7 +45,7 @@ class Experiment(object):
     #     T: (int list) budgets for each round
     #     J: (int list) cost for each round
     #     S: (int list) information gain for each round
-    #     K: (int list) The number of arms to move onto the next round. The last number should be k.
+    #     K: (int list) The number of arms to move onto the next round.
     #     seed: int
     # """
         if seed is not None:
@@ -72,20 +68,20 @@ class Experiment(object):
 
         # Set up the algorithm
         if algorithm == 'caco':
-            mab_alg = CACO(self.arms, K, S, J, delta, 
-                           self.sigma, epsilon, oracle, oracle_utility, 
+            mab_alg = CACO(self.arms, K, S, J, delta,
+                           self.sigma, epsilon, oracle, oracle_utility,
                            this_oracle_args)
         elif algorithm == 'brutas':
             if oracle_type == 'submod':
                 oracle = oracles.c_submod_oracle
             else:
                 oracle = oracles.c_top_k_oracle
-            mab_alg = BRUTaS(self.arms, T, K, S, J, delta, 
-                              self.sigma, epsilon, oracle, oracle_utility, 
+            mab_alg = BRUTaS(self.arms, T, K, S, J, delta,
+                              self.sigma, epsilon, oracle, oracle_utility,
                               this_oracle_args)
         elif algorithm == 'uniform':
-            mab_alg = Uniform(self.arms, T, K, S, J, delta, 
-                              self.sigma, epsilon, oracle, oracle_utility, 
+            mab_alg = Uniform(self.arms, T, K, S, J, delta,
+                              self.sigma, epsilon, oracle, oracle_utility,
                               this_oracle_args)
         elif algorithm == 'random':
             mab_alg = None
@@ -108,7 +104,28 @@ class Experiment(object):
         with open(file_path, 'wb+') as f:
             pickle.dump(results_dict, f)
 
-ex = Experiment(1, 50, 10, 0.2, 10, "data/")
+class Random_Experiment(Experiment):
+
+    def __init__(self, arm_seed, n, sigma, dist_mean, *args, **kwargs):
+    # """Initialize an Random_Experiment object.
+    # this will make n arms with random true utility sampled from  a
+    # normal with mean dist_mean and unit variance. Each arm's sigma will be
+    # the argument sigma and the pull strategy will be utils.pull_strat.
+    # Args:
+    #     arm_seed: the seed to build the arms
+    #     n: int number of arms
+    #     sigma: float sigma of arms
+    #     dist_mean: float mean to pull arms around
+        self.arm_seed = arm_seed
+        np.random.seed(self.arm_seed)
+        # Set up arms
+        arms = [Arm(np.random.normal(dist_mean),
+            utils.pull_strat,
+            {"sigma": sigma, "dist_mean": dist_mean}) for i in range(n)]
+        super(Random_Experiment, self).__init__(arms, sigma, *args, **kwargs)
+
+
+ex = Random_Experiment(1, 50, 0.2, 10, "data/")
 ex.run_experiment(0.3, 0.3, T=[200,60], algorithm="uniform")
 ex.run_experiment(0.3, 0.3, T=[200,60], algorithm="brutas")
 ex.run_experiment(0.3, 0.3, algorithm="caco")
@@ -118,8 +135,8 @@ ex.run_experiment(0.3, 0.3, algorithm="caco", oracle_type="submod")
 
 
 
-#     def grid_test(delta, epsilon, oracle_type="topK", algorithm="uniform", budgets=[1], 
-#                   k_type="flipped_poly", js_type="linear", ms=[2], 
+#     def grid_test(delta, epsilon, oracle_type="topK", algorithm="uniform", budgets=[1],
+#                   k_type="flipped_poly", js_type="linear", ms=[2],
 #                   k_rates=[1,5,10], j_rates=[1], s_rates=[2]):
 #     """Runs an algorithm over m_range, varying s's and j's as desired
 #     Args:
@@ -135,7 +152,7 @@ ex.run_experiment(0.3, 0.3, algorithm="caco", oracle_type="submod")
 #                         pass in power in (1, inf) for concave function from 0 to m
 #                 'flipped_poly' - k_i's as above but rotated diagonally over linear line
 #         js_type: 'linear', 'poly', 'mult'
-#         ms: 
+#         ms:
 #         k_rates: lists of rates for k to grow
 #         j_rates: list of rates for j to grow
 #         s_rates: list of rates for s to grow
@@ -165,7 +182,7 @@ ex.run_experiment(0.3, 0.3, algorithm="caco", oracle_type="submod")
 #                         for T in set_Ts:
 #                             # Set up the budget correctly
 #                             T = list(T)
-#                             T = 
+#                             T =
 #                             for arm in arms:
 #                                 arm.reset()
 #                             np.random.seed(seed)
