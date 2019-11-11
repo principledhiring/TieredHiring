@@ -43,7 +43,7 @@ class BRUTaS(object):
                 num_pulls = T_tilde_i[-1] - T_tilde_i[-2]
                 for arm in self.active_arms:
                     for pull in range(num_pulls):
-                        self.arms[arm].pull_arm(self.S[i], self.J[i])
+                        self.arms[arm].pull_arm(self.S[i], self.J[i], i)
                     self.util[arm] = self.arms[arm].get_util()
                     self.cost[-1] += self.J[i]*num_pulls
                     # if save_data:

@@ -5,11 +5,11 @@ from uniform import Uniform
 from brutas import BRUTaS
 from caco import CACO
 import pickle
-from arm import Arm
+from arm import Normal_Arm
 import os
 
 class Experiment(object):
-    def __init__(self, arms, sigma, save_directory,
+    def __init__(self, arms, sigma, save_directory='./data/',
                  q=2):
     # """Initialize a Experiment super object.
     # Args:
@@ -110,7 +110,7 @@ class Random_Experiment(Experiment):
     # """Initialize an Random_Experiment object.
     # this will make n arms with random true utility sampled from  a
     # normal with mean dist_mean and unit variance. Each arm's sigma will be
-    # the argument sigma and the pull strategy will be utils.pull_strat.
+    # the argument sigma.
     # Args:
     #     arm_seed: the seed to build the arms
     #     n: int number of arms
@@ -119,19 +119,18 @@ class Random_Experiment(Experiment):
         self.arm_seed = arm_seed
         np.random.seed(self.arm_seed)
         # Set up arms
-        arms = [Arm(np.random.normal(dist_mean),
-            utils.pull_strat,
+        arms = [Normal_Arm(np.random.normal(dist_mean),
             {"sigma": sigma, "dist_mean": dist_mean}) for i in range(n)]
         super(Random_Experiment, self).__init__(arms, sigma, *args, **kwargs)
 
 
-ex = Random_Experiment(1, 50, 0.2, 10, "data/")
-ex.run_experiment(0.3, 0.3, T=[200,60], algorithm="uniform")
-ex.run_experiment(0.3, 0.3, T=[200,60], algorithm="brutas")
-ex.run_experiment(0.3, 0.3, algorithm="caco")
-ex.run_experiment(0.3, 0.3, T=[200,60], algorithm="uniform", oracle_type="submod")
-ex.run_experiment(0.3, 0.3, T=[200,60], algorithm="brutas", oracle_type="submod")
-ex.run_experiment(0.3, 0.3, algorithm="caco", oracle_type="submod")
+# ex = Random_Experiment(1, 50, 0.2, 10, save_directory="data/")
+# ex.run_experiment(0.3, 0.3, T=[200,60], algorithm="uniform")
+# ex.run_experiment(0.3, 0.3, T=[200,60], algorithm="brutas")
+# ex.run_experiment(0.3, 0.3, algorithm="caco")
+# ex.run_experiment(0.3, 0.3, T=[200,60], algorithm="uniform", oracle_type="submod")
+# ex.run_experiment(0.3, 0.3, T=[200,60], algorithm="brutas", oracle_type="submod")
+# ex.run_experiment(0.3, 0.3, algorithm="caco", oracle_type="submod")
 
 
 

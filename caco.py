@@ -22,7 +22,7 @@ class CACO(object):
     def run_alg(self):
         for i in range(len(self.K)):
             for j in self.A:
-                self.arms[j].pull_arm(self.S[i], self.J[i])
+                self.arms[j].pull_arm(self.S[i], self.J[i], i)
                 self.util[j] = self.arms[j].get_util()
 
                 # if save_data:
@@ -67,7 +67,7 @@ class CACO(object):
                     if self.rad[p] < self.rad[a]:
                         p = a
 
-                self.arms[p].pull_arm(self.S[i], self.J[i])
+                self.arms[p].pull_arm(self.S[i], self.J[i], i)
                 self.util[p] = self.arms[p].get_util()
                 self.cost[-1] += self.J[i]
 

@@ -1,8 +1,5 @@
 import numpy as np
 
-def pull_strat(true_utility, sigma):
-    return np.random.normal(true_utility, sigma)
-
 def get_ks(k, n, m=None, rate=2, type='fraction'):
     """Return k_i's for each round.
 

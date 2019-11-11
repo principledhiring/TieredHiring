@@ -1,7 +1,7 @@
 import numpy as np
 
 class Uniform(object):
-    
+
     def __init__(self, arms, T, K, S, J, delta, sigma, epsilon, oracle, utility, oracle_args=[]):
         self.arms = arms
         self.T = T
@@ -24,7 +24,7 @@ class Uniform(object):
             # Pull each arm T[i]/jn number of times.
             for j in self.A:
                 for x in range(int(self.T[i]/(self.A.size*self.J[i]))):
-                    self.arms[j].pull_arm(self.S[i], self.J[i])
+                    self.arms[j].pull_arm(self.S[i], self.J[i], i)
                     self.cost[-1] += self.J[i]
                 self.util[j] = self.arms[j].get_util()
             # Get the reduced set for this round
@@ -32,4 +32,3 @@ class Uniform(object):
             self.cost.append(self.cost[-1])
 
         return self.A
-
