@@ -32,11 +32,11 @@ class Set_Arm(Arm):
     class Real_Pull(object):
         def __init__(self,arr):
             self.remaining_pulls = arr
+            random.shuffle(self.remaining_pulls)
             self.already_pulled  = []
 
         def sample(self):
-            smpld = random.sample(self.remaining_pulls,1)[0]
-            self.remaining_pulls.remove(smpld)
+            smpld = self.remaining_pulls.pop()
             self.already_pulled.append(smpld)
             return smpld
 
@@ -62,7 +62,7 @@ class Set_Arm(Arm):
         self.gain += s
         self.cost += j
         self.util = (self.util*(self.gain-s)*1.0+reward)/(self.gain)
-        return
+        return reward
 
 class Normal_Arm(Arm):
 
@@ -81,3 +81,4 @@ class Normal_Arm(Arm):
         self.gain += s
         self.cost += j
         self.util = (self.util*(self.gain-s)*1.0+reward)/(self.gain)
+        return reward

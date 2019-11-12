@@ -110,6 +110,7 @@ ENV/
 .mypy_cache/
 
 data/
+data_trial/
 
 todo.txt
 Untitled.ipynb
